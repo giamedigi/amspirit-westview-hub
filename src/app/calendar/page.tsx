@@ -1,0 +1,1 @@
+import{PageHeading}from"@/components/page-heading";import{CalendarView}from"@/components/calendar-view";import{memberEvents}from"@/data/events";export const metadata={title:"Calendar"};export default function Page(){return <><PageHeading title="Chapter Calendar">Select a date to see chapter meetings and member events.</PageHeading><CalendarView events={memberEvents}/></>}

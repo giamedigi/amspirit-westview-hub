@@ -1,0 +1,1 @@
+import{PageHeading}from"@/components/page-heading";import{MeetingCard}from"@/components/meeting-card";import{InviteTool}from"@/components/invite-tool";export const metadata={title:"Invite a Guest"};export default function Page(){return <><PageHeading title="Invite a Guest">Share a friendly, ready-to-send invitation.</PageHeading><MeetingCard compact/><InviteTool/></>}

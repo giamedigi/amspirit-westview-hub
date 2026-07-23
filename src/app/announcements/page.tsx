@@ -1,0 +1,2 @@
+import{PageHeading}from "@/components/page-heading";import{AnnouncementCard}from "@/components/announcement-card";import{activeAnnouncements}from "@/data/announcements";
+export const metadata={title:"Announcements"};export default function Page(){const items=activeAnnouncements(new Date("2026-07-23T12:00:00"));return <><PageHeading title="Announcements">Active chapter updates, with urgent and important notices clearly labeled.</PageHeading><div className="stack">{items.map(item=><AnnouncementCard key={item.id} item={item}/>)}</div></>}
