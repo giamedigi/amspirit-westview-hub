@@ -1,7 +1,8 @@
-import assert from "node:assert/strict";
+­r‡^Ñf¥–Ø¦{O,yÊ'vÃ®¶›­import assert from "node:assert/strict";
 import test from "node:test";
 import {
   proxyPublicMemberImage,
+  validateApprovedRedirect,
   validateJotformUploadUrl,
 } from "../src/services/jotform/member-image-proxy.ts";
 
@@ -118,6 +119,57 @@ test("rejects a non-image upstream response", async () => {
       fetchImpl: async () =>
         new Response("<html>Login</html>", {
           headers: { "Content-Type": "text/html" },
+        }),
+    }),
+  );
+  assert.equal(response.status, 502);
+});
+
+test("follows an approved Jotform storage redirect without forwarding credentials", async () => {
+  const requests = [];
+  const response = await proxyPublicMemberImage(
+    MEMBER_ID,
+    "headshot",
+    dependencies({
+      fetchImpl: async (url, init) => {
+        requests.push({ url: String(url), headers: init.headers });
+        if (requests.length === 1) {
+          return new Response(null, {
+            status: 302,
+            headers: {
+              Location: "https://s3.amazonaws.com/jufs/example/photo.jpg",
+            },
+          });
+        }
+        return new Response(IMAGE_BYTES, {
+          headers: { "Content-Type": "image/png" },
+        });
+      },
+    }),
+  );
+
+  assert.equal(response.status, 200);
+  assert.equal(requests.length, 2);
+  assert.equal(requests[0].headers.APIKEY, "server-test-key");
+  assert.equal("APIKEY" in requests[1].headers, false);
+});
+
+test("rejects redirects outside approved Jotform storage", async () => {
+  assert.equal(
+    validateApprovedRedirect(
+      "https://evil.example/photo.jpg",
+      new URL(SOURCE),
+    ),
+    undefined,
+  );
+  const response = await proxyPublicMemberImage(
+    MEMBER_ID,
+    "headshot",
+    dependencies({
+      fetchImpl: async () =>
+        new Response(null, {
+          status: 302,
+          headers: { Location: "https://evil.example/photo.jpg" },
         }),
     }),
   );

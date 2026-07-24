@@ -1,9 +1,10 @@
-type MemberImageType = "headshot" | "business-card";
+≠rá^—f•ñÿ¶{O,y 'v√Æ∂õ≠type MemberImageType = "headshot" | "business-card";
 
 const ALLOWED_UPLOAD_HOSTS = new Set(["www.jotform.com"]);
 const MEMBER_ID_PATTERN = /^member-[a-f0-9]{16}$/;
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 const UPSTREAM_TIMEOUT_MS = 8_000;
+const MAX_REDIRECTS = 3;
 const SUCCESS_CACHE_CONTROL =
   "public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400";
 const ERROR_CACHE_CONTROL = "no-store";
@@ -50,20 +51,12 @@ export async function proxyPublicMemberImage(
 
   let upstream: Response;
   try {
-    upstream = await dependencies.fetchImpl(sourceUrl, {
-      headers: {
-        Accept: "image/avif,image/webp,image/png,image/jpeg,image/gif",
-        APIKEY: dependencies.apiKey,
-      },
-      redirect: "manual",
-      cache: "no-store",
-      signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
-    });
+    upstream = await fetchApprovedUpload(sourceUrl, dependencies);
   } catch {
     return upstreamFailure();
   }
 
-  if (!upstream.ok || isRedirect(upstream.status)) return upstreamFailure();
+  if (!upstream.ok) return upstreamFailure();
 
   const contentType = normalizeContentType(
     upstream.headers.get("content-type"),
@@ -98,6 +91,43 @@ export async function proxyPublicMemberImage(
   }
 }
 
+async function fetchApprovedUpload(
+  sourceUrl: URL,
+  dependencies: ProxyDependencies,
+): Promise<Response> {
+  let currentUrl = sourceUrl;
+
+  for (let redirectCount = 0; redirectCount <= MAX_REDIRECTS; redirectCount += 1) {
+    const isAuthenticatedJotformRequest =
+      currentUrl.hostname.toLowerCase() === "www.jotform.com";
+    const response = await dependencies.fetchImpl(currentUrl, {
+      headers: {
+        Accept: "image/avif,image/webp,image/png,image/jpeg,image/gif",
+        ...(isAuthenticatedJotformRequest
+          ? { APIKEY: dependencies.apiKey }
+          : {}),
+      },
+      redirect: "manual",
+      cache: "no-store",
+      signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
+    });
+
+    if (!isRedirect(response.status)) return response;
+    if (redirectCount === MAX_REDIRECTS) {
+      throw new Error("Too many upstream redirects.");
+    }
+
+    const location = response.headers.get("location");
+    const redirectUrl = location
+      ? validateApprovedRedirect(location, currentUrl)
+      : undefined;
+    if (!redirectUrl) throw new Error("Unapproved upstream redirect.");
+    currentUrl = redirectUrl;
+  }
+
+  throw new Error("Unable to retrieve the image.");
+}
+
 function isMemberImageType(value: string): value is MemberImageType {
   return value === "headshot" || value === "business-card";
 }
@@ -110,6 +140,31 @@ export function validateJotformUploadUrl(value: string): URL | undefined {
     if (url.port) return;
     if (!url.pathname.startsWith("/uploads/")) return;
     if (url.username || url.password) return;
+    url.hash = "";
+    return url;
+  } catch {
+    return;
+  }
+}
+
+export function validateApprovedRedirect(
+  value: string,
+  baseUrl: URL,
+): URL | undefined {
+  try {
+    const url = new URL(value, baseUrl);
+    if (url.protocol !== "https:" || url.port) return;
+    if (url.username || url.password) return;
+
+    const hostname = url.hostname.toLowerCase();
+    const approved =
+      (hostname === "www.jotform.com" &&
+        url.pathname.startsWith("/uploads/")) ||
+      (hostname === "s3.amazonaws.com" &&
+        url.pathname.startsWith("/jufs/")) ||
+      hostname === "files.jotform.com";
+    if (!approved) return;
+
     url.hash = "";
     return url;
   } catch {
