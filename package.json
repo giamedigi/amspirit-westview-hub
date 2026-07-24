@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit",
     "test:sharing": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types --test tests/sharing-tools.test.mjs",
     "test:uploads": "node --conditions=react-server --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types --test tests/jotform-uploads.test.mjs",
+    "test:member-images": "node --conditions=react-server --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types --test tests/member-image-proxy.test.mjs",
     "jotform:inspect": "node --env-file-if-exists=.env.local scripts/inspect-jotform.mjs"
   },
   "dependencies": {

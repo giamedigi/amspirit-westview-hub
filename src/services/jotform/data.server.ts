@@ -26,6 +26,10 @@ import {
   type JotformFormKey,
 } from "./env.server";
 import type { RawJotformSubmission } from "./raw-types";
+import {
+  memberImagePath,
+  type MemberImageType,
+} from "./member-images";
 
 export type DataSource = "live" | "mock" | "unavailable";
 
@@ -52,19 +56,42 @@ export async function getMembers(): Promise<DataResult<Member[]>> {
     return { data: [...mockMembers], source: "mock", error: false };
   }
   try {
-    const submissions = await fetchFormSubmissions(
-      getJotformFormId("members"),
-    );
-    const { records, stats } = adaptSubmissions(
-      submissions,
-      inspectMemberSubmission,
-    );
+    const { records, stats } = await loadLiveMembers();
     records.sort((a, b) => a.fullName.localeCompare(b.fullName));
     logSafeDiagnostics("members", stats, 0);
-    return { data: records, source: "live", error: false };
+    return {
+      data: records.map(withPublicMemberImageUrls),
+      source: "live",
+      error: false,
+    };
   } catch (error) {
     logSafeFailure("members", error);
     return { data: [], source: "unavailable", error: true };
+  }
+}
+
+export async function getPublicMemberImageSource(
+  memberId: string,
+  imageType: MemberImageType,
+): Promise<
+  | { status: "found"; sourceUrl: string }
+  | { status: "not-found" }
+  | { status: "unavailable" }
+> {
+  if (!hasJotformConfiguration("members")) return { status: "not-found" };
+  try {
+    const { records } = await loadLiveMembers();
+    const member = records.find((item) => item.id === memberId);
+    const sourceUrl =
+      imageType === "headshot"
+        ? member?.headshot
+        : member?.businessCardImage;
+    return sourceUrl
+      ? { status: "found", sourceUrl }
+      : { status: "not-found" };
+  } catch (error) {
+    logSafeFailure("members", error);
+    return { status: "unavailable" };
   }
 }
 
@@ -206,6 +233,26 @@ function adaptSubmissions<T>(
   });
 
   return { records, acceptedSubmissions, stats };
+}
+
+async function loadLiveMembers(): Promise<{
+  records: Member[];
+  stats: AdaptationStats;
+}> {
+  const submissions = await fetchFormSubmissions(getJotformFormId("members"));
+  return adaptSubmissions(submissions, inspectMemberSubmission);
+}
+
+function withPublicMemberImageUrls(member: Member): Member {
+  return {
+    ...member,
+    headshot: member.headshot
+      ? memberImagePath(member.id, "headshot")
+      : undefined,
+    businessCardImage: member.businessCardImage
+      ? memberImagePath(member.id, "business-card")
+      : undefined,
+  };
 }
 
 function localDateKey(date: Date): string {
