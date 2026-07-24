@@ -23,7 +23,7 @@ export function inspectMemberSubmission(
 ): AdaptationResult<Member> {
   const fullName = fullNameValue(answer(submission, "2"));
   const businessName = textValue(answer(submission, "3"));
-  if (!fullName || !businessName) {
+  if (!fullName) {
     return {
       record: null,
       rejectionCategory: "missing_required_field",
@@ -37,7 +37,11 @@ export function inspectMemberSubmission(
 
   return {
     record: {
-      id: stablePublicId("member", fullName, businessName),
+      id: stablePublicId(
+        "member",
+        fullName,
+        businessName || profession || "business",
+      ),
       fullName,
       businessName,
       profession: profession || "Business professional",

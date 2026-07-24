@@ -1,0 +1,108 @@
+.page {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.header {
+  display: grid;
+  grid-template-columns: 84px minmax(0, 1fr);
+  gap: 1rem;
+  align-items: center;
+}
+
+.portrait,
+.headshot,
+.initials {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+}
+
+.portrait {
+  position: relative;
+}
+
+.headshot {
+  position: absolute;
+  inset: 0;
+  display: block;
+  object-fit: cover;
+  border: 2px solid var(--line);
+}
+
+.initials {
+  display: grid;
+  place-items: center;
+  background: #e0e7ff;
+  color: #3730a3;
+  font-size: 1.35rem;
+  font-weight: 850;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: clamp(2rem, 8vw, 3rem);
+  line-height: 1.08;
+  letter-spacing: -0.035em;
+}
+
+.header p {
+  margin: 0.35rem 0 0;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  align-items: center;
+}
+
+.actions :global(.status) {
+  flex-basis: 100%;
+}
+
+.information {
+  display: grid;
+  gap: 1.2rem;
+}
+
+.information section h2 {
+  margin: 0 0 0.35rem;
+  font-size: 1.2rem;
+}
+
+.information section p {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.businessCard {
+  display: block;
+  max-width: 720px;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  overflow: hidden;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.businessCard img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 70vh;
+  object-fit: contain;
+}
+
+@media (min-width: 640px) {
+  .header {
+    grid-template-columns: 110px minmax(0, 1fr);
+  }
+
+  .portrait,
+  .headshot,
+  .initials {
+    width: 110px;
+    height: 110px;
+  }
+}

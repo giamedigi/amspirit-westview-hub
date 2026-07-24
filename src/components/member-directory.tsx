@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import type { Member } from "@/lib/types";
+import styles from "./member-directory.module.css";
 
 export function MemberDirectory({ members }: { members: Member[] }) {
   const [query, setQuery] = useState("");
@@ -26,8 +28,13 @@ export function MemberDirectory({ members }: { members: Member[] }) {
       </p>
       <div className="member-grid">
         {filtered.map((member) => (
-          <article className="member-card" key={member.id}>
-            <div className="member-summary">
+          <Link
+            className={`member-card ${styles.cardLink}`}
+            href={`/members/${member.id}`}
+            aria-label={`View member profile for ${member.fullName}`}
+            key={member.id}
+          >
+            <div className={`member-summary ${styles.summary}`}>
               <span className="avatar" aria-hidden="true">
                 {member.fullName
                   .split(" ")
@@ -44,40 +51,10 @@ export function MemberDirectory({ members }: { members: Member[] }) {
                 </p>
               </div>
             </div>
-            <details>
-              <summary>View details</summary>
-              <div className="member-details">
-                {member.description && <p>{member.description}</p>}
-                {member.idealReferral && (
-                  <p>
-                    <strong>Ideal referral</strong>
-                    <br />
-                    {member.idealReferral}
-                  </p>
-                )}
-                <div className="contact-list">
-                  {member.permissions.phone && member.phone && (
-                    <a href={`tel:${member.phone}`}>Call {member.phone}</a>
-                  )}
-                  {member.permissions.email && member.email && (
-                    <a href={`mailto:${member.email}`}>
-                      Email {member.fullName.split(" ")[0]}
-                    </a>
-                  )}
-                  {member.website && (
-                    <a
-                      href={member.website}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      Visit website
-                      <span className="sr-only"> (opens in new tab)</span>
-                    </a>
-                  )}
-                </div>
-              </div>
-            </details>
-          </article>
+            <span className={styles.chevron} aria-hidden="true">
+              ›
+            </span>
+          </Link>
         ))}
       </div>
     </>

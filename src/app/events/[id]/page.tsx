@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DataError } from "@/components/data-state";
+import { SafeLinkedExternalImage } from "@/components/safe-external-image";
+import { EventShareTools } from "@/components/share-tools";
 import { eventMapsUrl, formatEventTime } from "@/lib/events";
 import { getMemberEvents } from "@/services/jotform/data.server";
 import styles from "./event-details.module.css";
@@ -50,6 +52,14 @@ export default async function EventDetailsPage({
       </header>
 
       <div className={styles.actions} aria-label="Event actions">
+        <EventShareTools event={event} publicPath={`/events/${event.id}`} />
+        <a
+          className="button secondary"
+          href={`/events/${event.id}/calendar.ics`}
+          download
+        >
+          Add to Calendar
+        </a>
         {event.registrationLink && (
           <ExternalButton href={event.registrationLink}>Register</ExternalButton>
         )}
@@ -59,7 +69,7 @@ export default async function EventDetailsPage({
           </ExternalButton>
         )}
         {mapsUrl && (
-          <ExternalButton href={mapsUrl}>Open Address in Maps</ExternalButton>
+          <ExternalButton href={mapsUrl}>Open in Maps</ExternalButton>
         )}
         {event.flyer && (
           <ExternalButton href={event.flyer}>View Full-Size Flyer</ExternalButton>
@@ -162,17 +172,13 @@ function EventMedia({
   return (
     <section className={styles.mediaSection} aria-labelledby={id}>
       <h2 id={id}>{title}</h2>
-      <a
+      <SafeLinkedExternalImage
         className={styles.mediaLink}
-        href={url}
-        target="_blank"
-        rel="noreferrer"
-        aria-label={`Open full-size ${title.toLowerCase()} in a new tab`}
-      >
-        {/* Upload dimensions and hostnames are not known until Jotform returns the file. */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img className={styles.mediaImage} src={url} alt={alt} />
-      </a>
+        imageClassName={styles.mediaImage}
+        src={url}
+        alt={alt}
+        linkLabel={`Open full-size ${title.toLowerCase()} in a new tab`}
+      />
       <div className={styles.mediaActions}>
         <ExternalButton href={url}>
           View Full-Size {title === "Event flyer" ? "Flyer" : "Graphic"}

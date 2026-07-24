@@ -27,6 +27,10 @@
   gap: 0.7rem;
 }
 
+.actions :global(.status) {
+  flex-basis: 100%;
+}
+
 .details {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
