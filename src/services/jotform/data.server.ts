@@ -30,6 +30,10 @@ import {
   memberImagePath,
   type MemberImageType,
 } from "./member-images";
+import {
+  eventImagePath,
+  type EventImageType,
+} from "./event-images";
 
 export type DataSource = "live" | "mock" | "unavailable";
 
@@ -100,21 +104,44 @@ export async function getMemberEvents(): Promise<DataResult<MemberEvent[]>> {
     return { data: [...mockEvents], source: "mock", error: false };
   }
   try {
-    const submissions = await fetchFormSubmissions(getJotformFormId("events"));
-    const { records, stats } = adaptSubmissions(
-      submissions,
-      inspectMemberEventSubmission,
-    );
+    const { records, stats } = await loadLiveEvents();
     records.sort((a, b) => a.date.localeCompare(b.date));
     const today = localDateKey(new Date());
     const removedFromUpcomingDisplay = records.filter(
       (event) => event.date < today,
     ).length;
     logSafeDiagnostics("events", stats, removedFromUpcomingDisplay);
-    return { data: records, source: "live", error: false };
+    return {
+      data: records.map(withPublicEventImageUrls),
+      source: "live",
+      error: false,
+    };
   } catch (error) {
     logSafeFailure("events", error);
     return { data: [], source: "unavailable", error: true };
+  }
+}
+
+export async function getPublicEventImageSource(
+  eventId: string,
+  imageType: EventImageType,
+): Promise<
+  | { status: "found"; sourceUrl: string }
+  | { status: "not-found" }
+  | { status: "unavailable" }
+> {
+  if (!hasJotformConfiguration("events")) return { status: "not-found" };
+  try {
+    const { records } = await loadLiveEvents();
+    const event = records.find((item) => item.id === eventId);
+    const sourceUrl =
+      imageType === "flyer" ? event?.flyer : event?.socialGraphic;
+    return sourceUrl
+      ? { status: "found", sourceUrl }
+      : { status: "not-found" };
+  } catch (error) {
+    logSafeFailure("events", error);
+    return { status: "unavailable" };
   }
 }
 
@@ -243,6 +270,14 @@ async function loadLiveMembers(): Promise<{
   return adaptSubmissions(submissions, inspectMemberSubmission);
 }
 
+async function loadLiveEvents(): Promise<{
+  records: MemberEvent[];
+  stats: AdaptationStats;
+}> {
+  const submissions = await fetchFormSubmissions(getJotformFormId("events"));
+  return adaptSubmissions(submissions, inspectMemberEventSubmission);
+}
+
 function withPublicMemberImageUrls(member: Member): Member {
   return {
     ...member,
@@ -251,6 +286,16 @@ function withPublicMemberImageUrls(member: Member): Member {
       : undefined,
     businessCardImage: member.businessCardImage
       ? memberImagePath(member.id, "business-card")
+      : undefined,
+  };
+}
+
+function withPublicEventImageUrls(event: MemberEvent): MemberEvent {
+  return {
+    ...event,
+    flyer: event.flyer ? eventImagePath(event.id, "flyer") : undefined,
+    socialGraphic: event.socialGraphic
+      ? eventImagePath(event.id, "social-graphic")
       : undefined,
   };
 }

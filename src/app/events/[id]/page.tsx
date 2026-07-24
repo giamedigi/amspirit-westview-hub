@@ -18,7 +18,7 @@ export default async function EventDetailsPage({
     return (
       <>
         <Link className="back-link" href="/calendar">
-          ← Back to calendar
+          â† Back to calendar
         </Link>
         <DataError label="Event details" />
       </>
@@ -39,7 +39,7 @@ export default async function EventDetailsPage({
   return (
     <article className={styles.page}>
       <Link className="back-link" href="/calendar">
-        ← Back to calendar
+        â† Back to calendar
       </Link>
       <header className={styles.header}>
         <span className="badge">{event.eventType || "Member event"}</span>
@@ -113,7 +113,7 @@ export default async function EventDetailsPage({
           id="event-flyer"
           title="Event flyer"
           url={event.flyer}
-          alt={`${event.title} event flyer`}
+          alt={`${event.title} flyer`}
         />
       )}
       {event.socialGraphic && (
@@ -121,7 +121,7 @@ export default async function EventDetailsPage({
           id="social-graphic"
           title="Social graphic"
           url={event.socialGraphic}
-          alt={`${event.title} social media graphic`}
+          alt={`${event.title} social graphic`}
         />
       )}
     </article>

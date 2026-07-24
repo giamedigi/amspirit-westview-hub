@@ -8,12 +8,12 @@ Thursday chapter meetings remain local application configuration.
 
 `src/services/jotform/` contains:
 
-- `env.server.ts` — lazy validation of server environment variables
-- `client.server.ts` — authenticated requests, timeouts, defensive parsing,
+- `env.server.ts` â€” lazy validation of server environment variables
+- `client.server.ts` â€” authenticated requests, timeouts, defensive parsing,
   pagination, errors, and temporary one-minute Next.js revalidation
-- `raw-types.ts` and `guards.ts` — the untrusted transport boundary
-- `adapters/` — explicit question-ID mapping into the application types
-- `data.server.ts` — source selection, active-date filtering, safe errors, and
+- `raw-types.ts` and `guards.ts` â€” the untrusted transport boundary
+- `adapters/` â€” explicit question-ID mapping into the application types
+- `data.server.ts` â€” source selection, active-date filtering, safe errors, and
   mock fallback when environment variables are absent
 
 Every service module imports `server-only`. The API key is sent to Jotform in
@@ -67,3 +67,10 @@ When a form changes:
 5. Run lint, type checking, the production build, and data-mapping checks.
 
 Never embed Jotform forms, Tables, Reports, widgets, or raw submission views.
+
+Public member and event uploads are served through restricted same-origin image
+routes. Successful image responses may remain in a browser cache for 24 hours
+and a shared cache for up to seven days, with a 24-hour stale-while-revalidate
+window. A replaced headshot, business card, flyer, or social graphic can
+therefore take up to seven days to refresh everywhere unless the cache is
+purged.
