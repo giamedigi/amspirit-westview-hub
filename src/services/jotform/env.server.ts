@@ -27,14 +27,13 @@ export function getJotformApiKey(): string {
   return requireEnvironmentVariable("JOTFORM_API_KEY");
 }
 
-export function getJotformInspectionToken(): string {
-  return requireEnvironmentVariable("JOTFORM_INSPECTION_TOKEN");
-}
-
 export function getJotformFormId(key: JotformFormKey): string {
   return requireEnvironmentVariable(formEnvironmentVariables[key]);
 }
 
-export function isJotformFormKey(value: string): value is JotformFormKey {
-  return Object.hasOwn(formEnvironmentVariables, value);
+export function hasJotformConfiguration(key: JotformFormKey): boolean {
+  return Boolean(
+    process.env.JOTFORM_API_KEY?.trim() &&
+      process.env[formEnvironmentVariables[key]]?.trim(),
+  );
 }

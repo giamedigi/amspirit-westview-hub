@@ -3,7 +3,7 @@ import type { AppConfiguration } from "@/lib/types";
 export const appConfig: AppConfiguration = {
   name: "AM Spirit West View Chapter Hub",
   portal: { label: "Official AM Spirit Member Portal", url: "https://www.amspirit.com/login.php", newTab: true },
-  // Replace this placeholder URL when the approved Jotform destination is available.
+  // Remaining configuration: replace this when the public member-event form URL is supplied.
   submitEvent: { label: "Submit a Member Event", url: "#submission-link-coming-soon", placeholder: true },
   directions: {
     label: "Get Directions",

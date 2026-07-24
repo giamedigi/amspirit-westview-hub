@@ -1,2 +1,29 @@
-import{PageHeading}from "@/components/page-heading";import{AnnouncementCard}from "@/components/announcement-card";import{activeAnnouncements}from "@/data/announcements";
-export const metadata={title:"Announcements"};export default function Page(){const items=activeAnnouncements(new Date("2026-07-23T12:00:00"));return <><PageHeading title="Announcements">Active chapter updates, with urgent and important notices clearly labeled.</PageHeading><div className="stack">{items.map(item=><AnnouncementCard key={item.id} item={item}/>)}</div></>}
+import { AnnouncementCard } from "@/components/announcement-card";
+import { DataEmpty, DataError } from "@/components/data-state";
+import { PageHeading } from "@/components/page-heading";
+import { getAnnouncements } from "@/services/jotform/data.server";
+
+export const metadata = { title: "Announcements" };
+
+export default async function Page() {
+  const result = await getAnnouncements();
+  return (
+    <>
+      <PageHeading title="Announcements">
+        Active chapter updates, with urgent and important notices clearly
+        labeled.
+      </PageHeading>
+      {result.error ? (
+        <DataError label="Announcements" />
+      ) : result.data.length ? (
+        <div className="stack">
+          {result.data.map((item) => (
+            <AnnouncementCard key={item.id} item={item} />
+          ))}
+        </div>
+      ) : (
+        <DataEmpty message="No active announcements." />
+      )}
+    </>
+  );
+}

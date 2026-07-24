@@ -15,12 +15,3 @@ export class JotformRequestError extends Error {
     this.name = "JotformRequestError";
   }
 }
-
-export class JotformMappingNotConfiguredError extends Error {
-  constructor(adapterName: string) {
-    super(
-      `${adapterName} mapping is not configured. Run the safe field inspection before adding question IDs.`,
-    );
-    this.name = "JotformMappingNotConfiguredError";
-  }
-}

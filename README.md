@@ -31,9 +31,12 @@ npm run build
 npm start
 ```
 
-## Repository scope and current data
+## Repository scope and data
 
-This repository is only for `amspirit-westview-hub`. Phase one uses typed mock data in `src/data/`:
+This repository is only for `amspirit-westview-hub`. The visible directory,
+member events, announcements, and Lunch Connections now use Jotform through
+server-only adapters. Typed mock data remains isolated in `src/data/` for local
+development when the applicable environment variables are absent:
 
 - `members.ts` — eight directory members
 - `events.ts` — five member/community events
@@ -42,11 +45,7 @@ This repository is only for `amspirit-westview-hub`. Phase one uses typed mock d
 
 Meeting information and external destinations are centralized in `src/config/app.ts`. The approved meeting address and Google Maps search URL are configured there once; placeholder destinations are marked with `placeholder: true`.
 
-## Phase 2 Jotform setup
-
-The secure server-only service architecture is present, but all pages still use
-the Phase 1 mock data. Live data must not be enabled until the four forms have
-been inspected and their question IDs mapped explicitly.
+## Jotform setup
 
 Copy `.env.example` to a new `.env.local` file:
 
@@ -62,14 +61,13 @@ JOTFORM_MEMBER_DIRECTORY_FORM_ID=your_member_directory_form_id
 JOTFORM_MEMBER_EVENTS_FORM_ID=your_member_events_form_id
 JOTFORM_ANNOUNCEMENTS_FORM_ID=your_announcements_form_id
 JOTFORM_LUNCH_PAIRINGS_FORM_ID=your_lunch_pairings_form_id
-JOTFORM_INSPECTION_TOKEN=a_unique_random_value_of_at_least_32_bytes
 ```
 
 `.env.local` is covered by `.env*` in `.gitignore`; `.env.example` is the only
 environment template allowed in Git. Never paste real credentials into source
 files, documentation, issues, chat messages, or commits.
 
-Run the safe field inspector for each form:
+Run the local safe field inspector when maintaining form mappings:
 
 ```bash
 npm run jotform:inspect -- members
@@ -83,15 +81,10 @@ anonymized answer shapes. It does not print the API key, answer values,
 submission IDs, or contact details. Share that sanitized JSON output when
 requesting the mapping step; review it once more before sharing.
 
-The implementation details and mapping workflow are documented in
+The implementation details and maintenance workflow are documented in
 `docs/FUTURE-JOTFORM.md`. Jotform remains a headless source: do not embed forms,
-Tables, Reports, widgets, or raw submission views.
-
-For deployed inspection, add `JOTFORM_INSPECTION_TOKEN` as a sensitive Vercel
-environment variable, redeploy, and call the temporary
-`/api/jotform-inspect/{kind}` endpoints with the token in the
-`x-inspection-token` header. Never put this token in a URL. Exact PowerShell
-commands and endpoint-removal instructions are in `docs/FUTURE-JOTFORM.md`.
+Tables, Reports, widgets, or raw submission views. The temporary deployed
+inspection routes have been removed.
 
 ## Logo replacement
 
@@ -113,7 +106,8 @@ The project is ready for a future standard Next.js Vercel deployment, but no Ver
 
 1. Confirm the approved logo and external links.
 2. Re-run lint, type checking, and the production build.
-3. Add the six Jotform variables from `.env.example` to the Vercel project
-   settings only when live integration is approved. Never prefix them with
-   `NEXT_PUBLIC_`.
-4. Review the public mock/member information and contact-display permissions.
+3. Add the five Jotform variables from `.env.example` to the Vercel project
+   settings. Never prefix them with `NEXT_PUBLIC_`.
+4. Confirm the public Submit Event URL in `src/config/app.ts`; it remains a
+   documented placeholder until that URL is supplied.
+5. Review member contact-display permissions.
