@@ -65,14 +65,9 @@ export async function proxyPublicImage<TImageType extends string>(
     return imageUpstreamFailure();
   }
 
-  const contentType = normalizeContentType(
+  const declaredContentType = normalizeContentType(
     upstream.headers.get("content-type"),
   );
-  if (!contentType || !ALLOWED_IMAGE_TYPES.has(contentType)) {
-    logSafeProxyFailure("non-image-content");
-    return imageUpstreamFailure();
-  }
-
   const contentLength = parseContentLength(
     upstream.headers.get("content-length"),
   );
@@ -83,6 +78,14 @@ export async function proxyPublicImage<TImageType extends string>(
 
   try {
     const bytes = await readLimitedBody(upstream, MAX_IMAGE_BYTES);
+    const contentType =
+      declaredContentType && ALLOWED_IMAGE_TYPES.has(declaredContentType)
+        ? declaredContentType
+        : detectImageContentType(bytes);
+    if (!contentType) {
+      logSafeProxyFailure("non-image-content");
+      return imageUpstreamFailure();
+    }
     const body = new ArrayBuffer(bytes.byteLength);
     new Uint8Array(body).set(bytes);
     return new Response(body, {
@@ -99,6 +102,45 @@ export async function proxyPublicImage<TImageType extends string>(
     logSafeProxyFailure("stream-size-or-read");
     return imageUpstreamFailure();
   }
+}
+
+function detectImageContentType(bytes: Uint8Array): string | undefined {
+  if (
+    bytes.length >= 8 &&
+    bytes[0] === 0x89 &&
+    bytes[1] === 0x50 &&
+    bytes[2] === 0x4e &&
+    bytes[3] === 0x47 &&
+    bytes[4] === 0x0d &&
+    bytes[5] === 0x0a &&
+    bytes[6] === 0x1a &&
+    bytes[7] === 0x0a
+  ) {
+    return "image/png";
+  }
+  if (
+    bytes.length >= 3 &&
+    bytes[0] === 0xff &&
+    bytes[1] === 0xd8 &&
+    bytes[2] === 0xff
+  ) {
+    return "image/jpeg";
+  }
+  const prefix = new TextDecoder("ascii").decode(bytes.slice(0, 12));
+  if (prefix.startsWith("GIF87a") || prefix.startsWith("GIF89a")) {
+    return "image/gif";
+  }
+  if (prefix.startsWith("RIFF") && prefix.slice(8, 12) === "WEBP") {
+    return "image/webp";
+  }
+  if (
+    bytes.length >= 12 &&
+    prefix.slice(4, 8) === "ftyp" &&
+    (prefix.slice(8, 12) === "avif" || prefix.slice(8, 12) === "avis")
+  ) {
+    return "image/avif";
+  }
+  return;
 }
 
 async function fetchApprovedJotformImage<TImageType extends string>(

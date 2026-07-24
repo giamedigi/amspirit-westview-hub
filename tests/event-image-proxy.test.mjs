@@ -5,7 +5,7 @@ import { proxyPublicEventImage } from "../src/services/jotform/event-image-proxy
 const EVENT_ID = "event-e7bd47acc2e25c89";
 const SOURCE =
   "https://www.jotform.com/uploads/example/form/submission/flyer.jpg";
-const IMAGE_BYTES = new Uint8Array([137, 80, 78, 71]);
+const IMAGE_BYTES = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]);
 
 function dependencies(overrides = {}) {
   return {
@@ -118,6 +118,21 @@ test("rejects a non-image response", async () => {
     }),
   );
   assert.equal(response.status, 502);
+});
+
+test("accepts a signature-verified image with a generic upstream type", async () => {
+  const response = await proxyPublicEventImage(
+    EVENT_ID,
+    "flyer",
+    dependencies({
+      fetchImpl: async () =>
+        new Response(IMAGE_BYTES, {
+          headers: { "Content-Type": "application/octet-stream" },
+        }),
+    }),
+  );
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get("content-type"), "image/png");
 });
 
 test("handles upstream failure safely", async () => {

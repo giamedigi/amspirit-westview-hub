@@ -9,7 +9,7 @@ import {
 const MEMBER_ID = "member-e7bd47acc2e25c89";
 const SOURCE =
   "https://www.jotform.com/uploads/example/form/submission/photo.jpg";
-const IMAGE_BYTES = new Uint8Array([137, 80, 78, 71]);
+const IMAGE_BYTES = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]);
 
 function dependencies(overrides = {}) {
   return {
