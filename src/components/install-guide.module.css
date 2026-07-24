@@ -1,0 +1,162 @@
+.dialog {
+  width: min(540px, calc(100vw - 1.5rem));
+  max-height: calc(100dvh - 1.5rem);
+  margin: auto;
+  padding: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  border: 0;
+  border-radius: 1.25rem;
+  background: #fff;
+  color: var(--ink);
+  box-shadow: 0 24px 80px rgb(0 0 0 / 35%);
+}
+
+.dialog::backdrop {
+  background: rgb(9 9 11 / 62%);
+}
+
+.content {
+  position: relative;
+  padding: 1.35rem;
+  border-top: 8px solid var(--red);
+}
+
+.close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: #fff;
+  color: var(--ink);
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.icon {
+  display: block;
+  width: 64px;
+  height: 64px;
+  margin-bottom: 0.8rem;
+  border-radius: 15px;
+}
+
+.content h2 {
+  max-width: 430px;
+  margin: 0;
+  padding-right: 2.5rem;
+  font-size: clamp(1.6rem, 7vw, 2rem);
+  line-height: 1.12;
+}
+
+.intro {
+  margin: 0.65rem 0 1rem;
+  color: var(--muted);
+}
+
+.platform {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.45rem;
+  color: var(--red-dark);
+  font-weight: 800;
+}
+
+.platform svg {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+}
+
+.steps {
+  display: grid;
+  gap: 0.65rem;
+  margin: 0 0 1.1rem;
+  padding: 0;
+  list-style: none;
+  counter-reset: install-step;
+}
+
+.steps li {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  gap: 0.7rem;
+  align-items: center;
+  min-height: 48px;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: 0.8rem;
+  background: var(--surface);
+  counter-increment: install-step;
+}
+
+.steps li::before {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--blue);
+  color: #fff;
+  font-weight: 850;
+  content: counter(install-step);
+}
+
+.actions {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.actions button {
+  width: 100%;
+  min-height: 48px;
+}
+
+.later,
+.never {
+  border: 0;
+  background: transparent;
+  color: var(--blue);
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.never {
+  color: var(--muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (min-width: 480px) {
+  .content {
+    padding: 1.6rem;
+  }
+
+  .actions {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .never {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .dialog[open] {
+    animation: guide-in 180ms ease-out;
+  }
+
+  @keyframes guide-in {
+    from {
+      opacity: 0;
+      transform: translateY(12px) scale(0.98);
+    }
+  }
+}
