@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { appConfig } from "@/config/app";
+import { formatEventTime } from "@/lib/events";
 import type { MemberEvent } from "@/lib/types";
 
 const key = (date: Date) =>
@@ -137,12 +139,10 @@ export function CalendarView({ events }: { events: MemberEvent[] }) {
           </article>
         )}
         {selectedEvents.map((event) => (
-          <details className="event-detail" key={event.id} open>
-            <summary>{event.title}</summary>
+          <article className="event-detail" key={event.id}>
+            <h3>{event.title}</h3>
             <p>
-              <strong>
-                {event.startTime} to {event.endTime}
-              </strong>
+              <strong>{formatEventTime(event.startTime, event.endTime)}</strong>
               {event.location && (
                 <>
                   <br />
@@ -151,17 +151,10 @@ export function CalendarView({ events }: { events: MemberEvent[] }) {
               )}
             </p>
             {event.description && <p>{event.description}</p>}
-            {event.registrationLink && (
-              <a
-                className="button primary"
-                href={event.registrationLink}
-                target="_blank"
-                rel="noreferrer"
-              >
-                Registration link
-              </a>
-            )}
-          </details>
+            <Link className="button primary" href={`/events/${event.id}`}>
+              View details <span aria-hidden="true">›</span>
+            </Link>
+          </article>
         ))}
         {!isMeeting && !selectedEvents.length && (
           <p className="empty-state">No events on this date.</p>

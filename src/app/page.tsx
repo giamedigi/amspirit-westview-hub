@@ -4,6 +4,7 @@ import { DataError } from "@/components/data-state";
 import { Icon } from "@/components/icons";
 import { MeetingCard } from "@/components/meeting-card";
 import { UrgentModal } from "@/components/urgent-modal";
+import { formatEventTime } from "@/lib/events";
 import {
   getAnnouncements,
   getMemberEvents,
@@ -87,7 +88,7 @@ export default async function Home() {
             {upcoming.map((event) => (
               <Link
                 className="event-preview"
-                href={`/calendar?event=${event.id}`}
+                href={`/events/${event.id}`}
                 key={event.id}
               >
                 <time dateTime={event.date}>
@@ -104,11 +105,12 @@ export default async function Home() {
                 <span>
                   <b>{event.title}</b>
                   <small>
-                    {event.startTime}
+                    {formatEventTime(event.startTime, event.endTime)}
                     {event.location ? ` · ${event.location}` : ""}
                   </small>
                 </span>
                 <span aria-hidden="true">›</span>
+                <span className="sr-only">View details</span>
               </Link>
             ))}
             {!upcoming.length && (

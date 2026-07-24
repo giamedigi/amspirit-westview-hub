@@ -157,12 +157,15 @@ export function safeUrl(
   const candidates: string[] = [];
   collectStrings(value, candidates);
   for (const candidate of candidates) {
-    const embeddedUrl = candidate.match(/https?:\/\/[^\s"'<>]+/i)?.[0];
-    const normalized = embeddedUrl
-      ? embeddedUrl
-      : candidate.startsWith("www.")
-        ? `https://${candidate}`
-        : candidate;
+    const decoded = candidate.replaceAll("&amp;", "&").trim();
+    const directUrl = /^(?:https?:\/\/|www\.)/i.test(decoded);
+    const embeddedUrl = decoded.match(/https?:\/\/[^\s"'<>]+/i)?.[0];
+    const normalized = directUrl
+      ? decoded.startsWith("www.")
+        ? `https://${decoded}`
+        : decoded
+      : embeddedUrl;
+    if (!normalized) continue;
     try {
       const url = new URL(normalized);
       if (url.protocol === "https:" || url.protocol === "http:") {

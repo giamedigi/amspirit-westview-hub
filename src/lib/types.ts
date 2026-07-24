@@ -8,8 +8,12 @@ export interface Member {
 }
 export interface MemberEvent {
   id: string; title: string; date: string; startTime: string; endTime: string;
-  location?: string; description: string; registrationLink?: string;
-  image?: string; type: "member" | "community";
+  location?: string; venue?: string; address?: string; description: string;
+  eventType?: string; eventFormat?: string; recurring?: string;
+  recurrenceDetails?: string; virtualLink?: string; openToPublic?: string;
+  registrationRequired?: string; registrationLink?: string; cost?: string;
+  registrationDeadline?: string; targetAudience?: string; flyer?: string;
+  socialGraphic?: string; type: "member" | "community";
 }
 export interface ChapterMeeting {
   day: "Thursday"; startTime: string; endTime: string; venue: string;

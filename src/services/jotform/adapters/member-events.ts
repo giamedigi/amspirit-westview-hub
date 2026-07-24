@@ -42,7 +42,7 @@ export function inspectMemberEventSubmission(
   const venue = textValue(answer(submission, "48"));
   const address = addressValue(answer(submission, "49"));
   const location = [venue, address].filter(Boolean).join(" — ");
-  const eventType = textValue(answer(submission, "41")).toLowerCase();
+  const eventType = textValue(answer(submission, "41"));
   const startTime = timeValue(answer(submission, "43"));
   const endTime = timeValue(answer(submission, "44"));
 
@@ -51,17 +51,32 @@ export function inspectMemberEventSubmission(
       id: stablePublicId("event", title, date, startTime),
       title,
       date,
-      startTime: startTime || "Time not listed",
-      endTime: endTime || "Time not listed",
+      startTime,
+      endTime,
       location: location || textValue(answer(submission, "47")) || undefined,
+      venue: venue || undefined,
+      address: address || undefined,
       description: textValue(answer(submission, "40")),
-      registrationLink:
-        safeUrl(answer(submission, "53")) ??
-        safeUrl(answer(submission, "50")),
-      image:
-        safeUrl(answer(submission, "57")) ??
-        safeUrl(answer(submission, "58")),
-      type: eventType.includes("community") ? "community" : "member",
+      eventType: eventType || undefined,
+      recurring: textValue(answer(submission, "45")) || undefined,
+      recurrenceDetails: textValue(answer(submission, "46")) || undefined,
+      eventFormat: textValue(answer(submission, "47")) || undefined,
+      virtualLink: safeUrl(answer(submission, "50")),
+      openToPublic: textValue(answer(submission, "51")) || undefined,
+      registrationRequired:
+        textValue(answer(submission, "52")) || undefined,
+      registrationLink: safeUrl(answer(submission, "53")),
+      cost: textValue(answer(submission, "54")) || undefined,
+      registrationDeadline:
+        dateValue(answer(submission, "55")) ||
+        textValue(answer(submission, "55")) ||
+        undefined,
+      targetAudience: textValue(answer(submission, "56")) || undefined,
+      flyer: safeUrl(answer(submission, "57")),
+      socialGraphic: safeUrl(answer(submission, "58")),
+      type: eventType.toLowerCase().includes("community")
+        ? "community"
+        : "member",
     },
     dateParsed: true,
   };
