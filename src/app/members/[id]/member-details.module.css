@@ -86,12 +86,16 @@
   box-shadow: var(--shadow);
 }
 
-.businessCard img {
+.businessCardImage {
   display: block;
   width: 100%;
   height: auto;
   max-height: 70vh;
   object-fit: contain;
+}
+
+.businessCardAction {
+  margin-top: 0.75rem;
 }
 
 @media (min-width: 640px) {

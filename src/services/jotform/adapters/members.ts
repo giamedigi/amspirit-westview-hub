@@ -10,6 +10,7 @@ import {
   safeUrl,
   stablePublicId,
   textValue,
+  uploadUrl,
 } from "./values";
 
 export function adaptMemberSubmission(
@@ -55,8 +56,8 @@ export function inspectMemberSubmission(
       website: safeUrl(answer(submission, "7")),
       description: textValue(answer(submission, "8")),
       idealReferral: textValue(answer(submission, "9")),
-      headshot: safeUrl(answer(submission, "10")),
-      businessCardImage: safeUrl(answer(submission, "11")),
+      headshot: uploadUrl(submission, "10"),
+      businessCardImage: uploadUrl(submission, "11"),
       permissions: {
         phone: mayDisplayContact,
         email: mayDisplayContact,

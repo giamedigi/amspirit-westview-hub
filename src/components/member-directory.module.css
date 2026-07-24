@@ -18,6 +18,30 @@
   padding-right: 3.4rem;
 }
 
+.avatar {
+  position: relative;
+  flex: 0 0 auto;
+  overflow: hidden;
+}
+
+.initials,
+.headshot {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.initials {
+  display: grid;
+  place-items: center;
+}
+
+.headshot {
+  display: block;
+  object-fit: cover;
+}
+
 .chevron {
   position: absolute;
   top: 50%;

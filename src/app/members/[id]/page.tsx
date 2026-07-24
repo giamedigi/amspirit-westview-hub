@@ -2,8 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DataError } from "@/components/data-state";
 import {
+  SafeBusinessCard,
   SafeExternalImage,
-  SafeLinkedExternalImage,
 } from "@/components/safe-external-image";
 import { MemberShareTools } from "@/components/share-tools";
 import { getMembers } from "@/services/jotform/data.server";
@@ -43,7 +43,7 @@ export default async function MemberDetailsPage({
             <SafeExternalImage
               className={styles.headshot}
               src={member.headshot}
-              alt={`Headshot of ${member.fullName}`}
+              alt={`${member.fullName} headshot`}
             />
           )}
         </div>
@@ -110,15 +110,14 @@ export default async function MemberDetailsPage({
       )}
 
       {member.businessCardImage && (
-        <section aria-labelledby="business-card-title">
-          <h2 id="business-card-title">Business card</h2>
-          <SafeLinkedExternalImage
-            className={styles.businessCard}
-            src={member.businessCardImage}
-            alt={`${member.fullName}'s business card`}
-            linkLabel={`Open ${member.fullName}'s business card full size`}
-          />
-        </section>
+        <SafeBusinessCard
+          src={member.businessCardImage}
+          alt={`${member.businessName || member.fullName} business card`}
+          linkLabel={`Open ${member.businessName || member.fullName} business card full size`}
+          linkClassName={styles.businessCard}
+          imageClassName={styles.businessCardImage}
+          actionClassName={`button secondary ${styles.businessCardAction}`}
+        />
       )}
     </article>
   );

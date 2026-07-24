@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import type { Member } from "@/lib/types";
+import { SafeExternalImage } from "./safe-external-image";
 import styles from "./member-directory.module.css";
 
 export function MemberDirectory({ members }: { members: Member[] }) {
@@ -35,12 +36,21 @@ export function MemberDirectory({ members }: { members: Member[] }) {
             key={member.id}
           >
             <div className={`member-summary ${styles.summary}`}>
-              <span className="avatar" aria-hidden="true">
-                {member.fullName
-                  .split(" ")
-                  .map((name) => name[0])
-                  .join("")
-                  .slice(0, 3)}
+              <span className={`avatar ${styles.avatar}`}>
+                <span className={styles.initials} aria-hidden="true">
+                  {member.fullName
+                    .split(" ")
+                    .map((name) => name[0])
+                    .join("")
+                    .slice(0, 3)}
+                </span>
+                {member.headshot && (
+                  <SafeExternalImage
+                    className={styles.headshot}
+                    src={member.headshot}
+                    alt={`${member.fullName} headshot`}
+                  />
+                )}
               </span>
               <div>
                 <h2>{member.fullName}</h2>

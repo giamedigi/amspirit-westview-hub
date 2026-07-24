@@ -156,23 +156,49 @@ export function safeUrl(
 ): string | undefined {
   const candidates: string[] = [];
   collectStrings(value, candidates);
+  return firstSafeUrl(candidates);
+}
+
+export function uploadUrl(
+  submission: RawJotformSubmission,
+  questionId: string | number,
+): string | undefined {
+  const raw = rawAnswer(submission, questionId);
+  if (!raw) return undefined;
+
+  const candidates: string[] = [];
+  collectUploadStrings(raw.answer, candidates);
+  if (raw.prettyFormat) candidates.push(raw.prettyFormat);
+  if (isAnswerValue(raw.value)) collectUploadStrings(raw.value, candidates);
+
+  return firstSafeUrl(candidates);
+}
+
+function firstSafeUrl(candidates: string[]): string | undefined {
   for (const candidate of candidates) {
-    const decoded = candidate.replaceAll("&amp;", "&").trim();
-    const directUrl = /^(?:https?:\/\/|www\.)/i.test(decoded);
-    const embeddedUrl = decoded.match(/https?:\/\/[^\s"'<>]+/i)?.[0];
-    const normalized = directUrl
-      ? decoded.startsWith("www.")
-        ? `https://${decoded}`
-        : decoded
-      : embeddedUrl;
-    if (!normalized) continue;
-    try {
-      const url = new URL(normalized);
-      if (url.protocol === "https:" || url.protocol === "http:") {
-        return url.toString();
+    const decoded = decodeHtml(candidate).trim();
+    const href =
+      decoded.match(/\bhref\s*=\s*["']([^"']+)["']/i)?.[1] ??
+      decoded.match(/\b(?:url|file|link|download(?:Url)?)\s*[:=]\s*["']([^"']+)["']/i)?.[1];
+    const possibleUrls = [
+      href,
+      /^(?:https?:\/\/|www\.)/i.test(decoded) ? decoded : undefined,
+      decoded.match(/https?:\/\/[^\s"'<>]+/i)?.[0],
+    ];
+
+    for (const possibleUrl of possibleUrls) {
+      if (!possibleUrl) continue;
+      const normalized = possibleUrl.startsWith("www.")
+        ? `https://${possibleUrl}`
+        : possibleUrl;
+      try {
+        const url = new URL(normalized);
+        if (url.protocol === "https:" || url.protocol === "http:") {
+          return url.toString();
+        }
+      } catch {
+        // Ignore malformed optional links.
       }
-    } catch {
-      // Ignore malformed optional links.
     }
   }
 }
@@ -258,5 +284,58 @@ function collectStrings(
     value.forEach((item) => collectStrings(item, output));
   } else if (value && typeof value === "object") {
     Object.values(value).forEach((item) => collectStrings(item, output));
+  }
+}
+
+function collectUploadStrings(
+  value: JotformAnswerValue | undefined,
+  output: string[],
+): void {
+  if (typeof value === "string") {
+    output.push(value.trim());
+    return;
+  }
+  if (Array.isArray(value)) {
+    value.forEach((item) => collectUploadStrings(item, output));
+    return;
+  }
+  if (!value || typeof value !== "object") return;
+
+  const preferredKeys = [
+    "url",
+    "downloadUrl",
+    "download",
+    "link",
+    "href",
+    "file",
+    "name",
+  ];
+  const seen = new Set(preferredKeys);
+  preferredKeys.forEach((key) => collectUploadStrings(value[key], output));
+  Object.entries(value).forEach(([key, nested]) => {
+    if (!seen.has(key)) collectUploadStrings(nested, output);
+  });
+}
+
+function decodeHtml(value: string): string {
+  return value
+    .replace(/&amp;/gi, "&")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#0*39;|&apos;/gi, "'")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&#x([0-9a-f]+);/gi, (_, hex: string) =>
+      safeCodePoint(Number.parseInt(hex, 16)),
+    )
+    .replace(/&#([0-9]+);/g, (_, decimal: string) =>
+      safeCodePoint(Number.parseInt(decimal, 10)),
+    );
+}
+
+function safeCodePoint(value: number): string {
+  try {
+    return String.fromCodePoint(value);
+  } catch {
+    return "";
   }
 }
