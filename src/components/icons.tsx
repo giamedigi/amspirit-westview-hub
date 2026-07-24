@@ -8,6 +8,7 @@ export function Icon({name}:{name:string}) {
     alert:"M12 9v4m0 4h.01M10.3 4.3 2 19h20L13.7 4.3a2 2 0 0 0-3.4 0z",
     invite:"M15 19c0-3-2-5-6-5s-6 2-6 5m6-9a3 3 0 1 0 0-6 3 3 0 0 0 0 6m10-3v6m-3-3h6",
     submit:"M12 5v14m-7-7h14",
+    facebook:"M14 21v-8h3l.5-4H14V7c0-1.2.4-2 2.2-2H18V2.2C17.3 2.1 16.2 2 15 2c-3 0-5 1.8-5 5v2H7v4h3v8",
   };
   return <svg className="icon" viewBox="0 0 24 24" aria-hidden="true"><path d={paths[name]||paths.more}/></svg>;
 }

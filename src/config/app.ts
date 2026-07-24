@@ -3,6 +3,11 @@ import type { AppConfiguration } from "@/lib/types";
 export const appConfig: AppConfiguration = {
   name: "AM Spirit West View Chapter Hub",
   portal: { label: "Official AM Spirit Member Portal", url: "https://www.amspirit.com/login.php", newTab: true },
+  facebook: {
+    label: "Visit Our Facebook Page",
+    url: "https://www.facebook.com/westviewamspirit/",
+    newTab: true,
+  },
   submitEvent: {
     label: "Submit a Member Event",
     url: "https://form.jotform.com/262034101380037",

@@ -4,6 +4,7 @@ import { DataError } from "@/components/data-state";
 import { Icon } from "@/components/icons";
 import { MeetingCard } from "@/components/meeting-card";
 import { UrgentModal } from "@/components/urgent-modal";
+import { appConfig } from "@/config/app";
 import { formatEventTime } from "@/lib/events";
 import {
   getAnnouncements,
@@ -51,7 +52,7 @@ export default async function Home() {
             <h2>{urgent.title}</h2>
             <p>
               {urgent.message.slice(0, 115)}
-              {urgent.message.length > 115 ? "…" : ""}
+              {urgent.message.length > 115 ? "â€¦" : ""}
             </p>
             <Link
               className="button light"
@@ -106,10 +107,10 @@ export default async function Home() {
                   <b>{event.title}</b>
                   <small>
                     {formatEventTime(event.startTime, event.endTime)}
-                    {event.location ? ` · ${event.location}` : ""}
+                    {event.location ? ` Â· ${event.location}` : ""}
                   </small>
                 </span>
-                <span aria-hidden="true">›</span>
+                <span aria-hidden="true">â€º</span>
                 <span className="sr-only">View details</span>
               </Link>
             ))}
@@ -136,6 +137,28 @@ export default async function Home() {
             )}
           </div>
         )}
+      </section>
+      <section className="facebook-callout" aria-labelledby="facebook-heading">
+        <div className="facebook-callout-icon" aria-hidden="true">
+          <Icon name="facebook" />
+        </div>
+        <div>
+          <h2 id="facebook-heading">Stay connected on Facebook</h2>
+          <p>
+            Follow the AM Spirit West View page for member spotlights, chapter
+            updates, upcoming events, and community news.
+          </p>
+          <a
+            className="button facebook-button"
+            href={appConfig.facebook.url}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Icon name="facebook" />
+            {appConfig.facebook.label}
+            <span className="sr-only"> (opens in a new tab)</span>
+          </a>
+        </div>
       </section>
     </>
   );

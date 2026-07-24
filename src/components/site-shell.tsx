@@ -28,7 +28,7 @@ export function SiteShell({children}:{children:React.ReactNode}){
     <footer><p>Independently created and managed for the AM Spirit West View Chapter. This is not an official AM Spirit Business Connections website or application.</p><a href={appConfig.portal.url} target="_blank" rel="noreferrer">{appConfig.portal.label}<span className="sr-only"> (opens in a new tab)</span></a></footer>
     <nav className="bottom-nav" aria-label="Mobile navigation">
       {nav.map(([label,href,icon])=><Link key={href} className={active(href)?"active":""} aria-current={active(href)?"page":undefined} href={href}><Icon name={icon}/><span>{label}</span></Link>)}
-      <details><summary className={more.some(([,h])=>active(h))?"active":""}><Icon name="more"/><span>More</span></summary><div className="more-menu">{more.map(([label,href])=><Link key={href} href={href}>{label}</Link>)}<a href={appConfig.portal.url} target="_blank" rel="noreferrer">{appConfig.portal.label}</a></div></details>
+      <details><summary className={more.some(([,h])=>active(h))?"active":""}><Icon name="more"/><span>More</span></summary><div className="more-menu">{more.map(([label,href])=><Link key={href} href={href}>{label}</Link>)}<a className="facebook-menu-link" href={appConfig.facebook.url} target="_blank" rel="noopener noreferrer"><Icon name="facebook"/><span>{appConfig.facebook.label}</span><span className="sr-only"> (opens in a new tab)</span></a><a href={appConfig.portal.url} target="_blank" rel="noreferrer">{appConfig.portal.label}</a></div></details>
     </nav>
   </>;
 }

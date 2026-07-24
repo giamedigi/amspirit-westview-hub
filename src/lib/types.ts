@@ -28,6 +28,7 @@ export interface LunchGroup { id: string; members: string[]; }
 export interface LunchMonth { month: number; year: number; groups: LunchGroup[]; }
 export interface ExternalLink { label: string; url: string; newTab?: boolean; placeholder?: boolean; }
 export interface AppConfiguration {
-  name: string; portal: ExternalLink; submitEvent: ExternalLink; directions: ExternalLink;
+  name: string; portal: ExternalLink; facebook: ExternalLink;
+  submitEvent: ExternalLink; directions: ExternalLink;
   meeting: ChapterMeeting;
 }
