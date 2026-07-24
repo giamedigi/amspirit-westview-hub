@@ -73,11 +73,19 @@ export function parseQuestions(content: unknown): RawJotformQuestion[] {
 }
 
 export function parseSubmissions(content: unknown): RawJotformSubmission[] {
-  if (!Array.isArray(content)) {
+  const submissions = Array.isArray(content)
+    ? content
+    : isRecord(content)
+      ? Object.values(content)
+      : null;
+  if (!submissions) {
     throw new TypeError("Jotform submissions response has an unexpected shape.");
   }
-  return content.map((value) => {
-    if (!isRecord(value) || typeof value.id !== "string") {
+  return submissions.map((value) => {
+    if (
+      !isRecord(value) ||
+      (typeof value.id !== "string" && typeof value.id !== "number")
+    ) {
       throw new TypeError("A Jotform submission has an unexpected shape.");
     }
     const rawAnswers = isRecord(value.answers) ? value.answers : {};
@@ -89,7 +97,7 @@ export function parseSubmissions(content: unknown): RawJotformSubmission[] {
     );
     return {
       ...value,
-      id: value.id,
+      id: String(value.id),
       form_id: optionalString(value.form_id),
       created_at: optionalString(value.created_at),
       updated_at: optionalString(value.updated_at),

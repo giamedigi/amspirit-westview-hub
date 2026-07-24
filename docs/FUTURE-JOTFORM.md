@@ -10,7 +10,7 @@ Thursday chapter meetings remain local application configuration.
 
 - `env.server.ts` — lazy validation of server environment variables
 - `client.server.ts` — authenticated requests, timeouts, defensive parsing,
-  pagination, errors, and five-minute Next.js revalidation
+  pagination, errors, and temporary one-minute Next.js revalidation
 - `raw-types.ts` and `guards.ts` — the untrusted transport boundary
 - `adapters/` — explicit question-ID mapping into the application types
 - `data.server.ts` — source selection, active-date filtering, safe errors, and
@@ -28,9 +28,12 @@ absent, the corresponding typed mock file in `src/data/` is used for local
 development. If live configuration exists but Jotform fails, the application
 shows a friendly unavailable state and does not mix in mock records.
 
-Requests use offset pagination, an eight-second timeout, and a five-minute
-revalidation interval. Logs contain only the data area and safe error category,
-never raw submissions, field values, form IDs, submission IDs, or credentials.
+Requests use offset pagination, an eight-second timeout, and a temporary
+one-minute revalidation interval while live mappings are verified. Aggregate
+diagnostics contain only the form kind, received/adapted/rejected counts,
+generic rejection categories, date-parse counts, and display-filter counts.
+They never contain raw submissions, field values, form IDs, submission IDs,
+names, contact information, addresses, or credentials.
 
 Announcements are filtered inclusively from publish date through expiration
 date. Lunch pairings retain only the newest valid submission for each month and

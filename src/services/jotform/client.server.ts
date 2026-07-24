@@ -11,7 +11,7 @@ import type {
 
 const JOTFORM_API_BASE_URL = "https://api.jotform.com";
 const DEFAULT_TIMEOUT_MS = 8_000;
-const DEFAULT_REVALIDATE_SECONDS = 300;
+const DEFAULT_REVALIDATE_SECONDS = 60;
 
 interface NextFetchInit extends RequestInit {
   next?: { revalidate: number; tags?: string[] };
@@ -145,10 +145,13 @@ export async function fetchFormSubmissions(
     );
     submissions.push(...response.content);
 
+    const rawCount = response.resultSet?.count;
     const totalCount =
-      typeof response.resultSet?.count === "number"
-        ? response.resultSet.count
-        : undefined;
+      typeof rawCount === "number"
+        ? rawCount
+        : typeof rawCount === "string"
+          ? Number.parseInt(rawCount, 10)
+          : undefined;
     if (
       response.content.length < pageSize ||
       (totalCount !== undefined && submissions.length >= totalCount)

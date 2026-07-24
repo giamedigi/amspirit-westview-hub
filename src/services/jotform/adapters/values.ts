@@ -3,14 +3,33 @@ import "server-only";
 import { createHash } from "node:crypto";
 import type {
   JotformAnswerValue,
+  RawJotformAnswer,
   RawJotformSubmission,
 } from "../raw-types";
 
+export type RejectionCategory =
+  | "empty_groups"
+  | "invalid_date"
+  | "invalid_date_range"
+  | "invalid_month_year"
+  | "missing_required_field";
+
+export interface AdaptationResult<T> {
+  record: T | null;
+  rejectionCategory?: RejectionCategory;
+  dateParsed: boolean | null;
+}
+
 export function answer(
   submission: RawJotformSubmission,
-  questionId: string,
+  questionId: string | number,
 ): JotformAnswerValue | undefined {
-  return submission.answers[questionId]?.answer;
+  const raw = rawAnswer(submission, questionId);
+  if (!raw) return undefined;
+  if (raw.answer !== undefined) return raw.answer;
+  if (raw.prettyFormat?.trim()) return raw.prettyFormat.trim();
+  const value = raw.value;
+  return isAnswerValue(value) ? value : undefined;
 }
 
 export function textValue(value: JotformAnswerValue | undefined): string {
@@ -25,6 +44,7 @@ export function textValue(value: JotformAnswerValue | undefined): string {
       "full",
       "formatted",
       "value",
+      "text",
       "name",
       "first",
       "middle",
@@ -94,8 +114,10 @@ export function dateValue(
   value: JotformAnswerValue | undefined,
 ): string {
   if (typeof value === "string") {
-    const match = value.match(/\d{4}-\d{2}-\d{2}/);
-    if (match) return match[0];
+    const isoMatch = value.match(/\b(\d{4})-(\d{1,2})-(\d{1,2})\b/);
+    if (isoMatch) {
+      return validDateParts(isoMatch[1], isoMatch[2], isoMatch[3]);
+    }
     const parsed = new Date(value);
     return Number.isNaN(parsed.getTime())
       ? ""
@@ -103,9 +125,13 @@ export function dateValue(
   }
   if (value && typeof value === "object" && !Array.isArray(value)) {
     const year = textValue(value.year);
-    const month = textValue(value.month).padStart(2, "0");
-    const day = textValue(value.day).padStart(2, "0");
-    if (year && month && day) return `${year}-${month}-${day}`;
+    const month = normalizeMonth(textValue(value.month));
+    const day = textValue(value.day);
+    if (year && month && day) return validDateParts(year, month, day);
+    for (const key of ["datetime", "date", "formatted", "value", "text"]) {
+      const nested = dateValue(value[key]);
+      if (nested) return nested;
+    }
   }
   return "";
 }
@@ -131,8 +157,12 @@ export function safeUrl(
   const candidates: string[] = [];
   collectStrings(value, candidates);
   for (const candidate of candidates) {
-    const normalized =
-      candidate.startsWith("www.") ? `https://${candidate}` : candidate;
+    const embeddedUrl = candidate.match(/https?:\/\/[^\s"'<>]+/i)?.[0];
+    const normalized = embeddedUrl
+      ? embeddedUrl
+      : candidate.startsWith("www.")
+        ? `https://${candidate}`
+        : candidate;
     try {
       const url = new URL(normalized);
       if (url.protocol === "https:" || url.protocol === "http:") {
@@ -160,6 +190,59 @@ export function submissionTimestamp(
   const value = submission.updated_at ?? submission.created_at ?? "";
   const timestamp = Date.parse(value);
   return Number.isNaN(timestamp) ? 0 : timestamp;
+}
+
+function rawAnswer(
+  submission: RawJotformSubmission,
+  questionId: string | number,
+): RawJotformAnswer | undefined {
+  const requested = String(questionId);
+  const direct = submission.answers[requested];
+  if (direct) return direct;
+
+  const numeric = Number(requested);
+  if (!Number.isFinite(numeric)) return undefined;
+  return Object.entries(submission.answers).find(
+    ([key]) => Number(key) === numeric,
+  )?.[1];
+}
+
+function isAnswerValue(value: unknown): value is JotformAnswerValue {
+  if (
+    value === null ||
+    typeof value === "string" ||
+    typeof value === "number" ||
+    typeof value === "boolean"
+  ) {
+    return true;
+  }
+  if (Array.isArray(value)) return value.every(isAnswerValue);
+  if (value && typeof value === "object") {
+    return Object.values(value).every(isAnswerValue);
+  }
+  return false;
+}
+
+function normalizeMonth(value: string): string {
+  const numeric = Number.parseInt(value, 10);
+  if (numeric >= 1 && numeric <= 12) return String(numeric);
+  const parsed = new Date(`1 ${value} 2000`);
+  return Number.isNaN(parsed.getTime()) ? "" : String(parsed.getMonth() + 1);
+}
+
+function validDateParts(year: string, month: string, day: string): string {
+  const yearNumber = Number.parseInt(year, 10);
+  const monthNumber = Number.parseInt(month, 10);
+  const dayNumber = Number.parseInt(day, 10);
+  const parsed = new Date(Date.UTC(yearNumber, monthNumber - 1, dayNumber));
+  if (
+    parsed.getUTCFullYear() !== yearNumber ||
+    parsed.getUTCMonth() !== monthNumber - 1 ||
+    parsed.getUTCDate() !== dayNumber
+  ) {
+    return "";
+  }
+  return `${String(yearNumber).padStart(4, "0")}-${String(monthNumber).padStart(2, "0")}-${String(dayNumber).padStart(2, "0")}`;
 }
 
 function collectStrings(

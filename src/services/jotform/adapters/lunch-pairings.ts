@@ -3,6 +3,7 @@ import "server-only";
 import type { LunchMonth } from "@/lib/types";
 import type { RawJotformSubmission } from "../raw-types";
 import {
+  type AdaptationResult,
   answer,
   stablePublicId,
   textValue,
@@ -16,8 +17,20 @@ const GROUP_QUESTION_IDS = Array.from({ length: 15 }, (_, index) => {
 export function adaptLunchPairingSubmission(
   submission: RawJotformSubmission,
 ): LunchMonth | null {
+  return inspectLunchPairingSubmission(submission).record;
+}
+
+export function inspectLunchPairingSubmission(
+  submission: RawJotformSubmission,
+): AdaptationResult<LunchMonth> {
   const monthYear = parseMonthYear(textValue(answer(submission, "2")));
-  if (!monthYear) return null;
+  if (!monthYear) {
+    return {
+      record: null,
+      rejectionCategory: "invalid_month_year",
+      dateParsed: false,
+    };
+  }
 
   const groups = GROUP_QUESTION_IDS.map((questionIds, index) => {
     const members = questionIds
@@ -29,8 +42,14 @@ export function adaptLunchPairingSubmission(
     };
   }).filter((group) => group.members.length > 0);
 
-  if (!groups.length) return null;
-  return { ...monthYear, groups };
+  if (!groups.length) {
+    return {
+      record: null,
+      rejectionCategory: "empty_groups",
+      dateParsed: true,
+    };
+  }
+  return { record: { ...monthYear, groups }, dateParsed: true };
 }
 
 function parseMonthYear(value: string): Pick<LunchMonth, "month" | "year"> | null {

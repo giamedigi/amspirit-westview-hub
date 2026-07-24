@@ -24,6 +24,7 @@ export interface RawJotformAnswer {
   type?: string;
   answer?: JotformAnswerValue;
   prettyFormat?: string;
+  value?: unknown;
   [key: string]: unknown;
 }
 
@@ -40,7 +41,7 @@ export interface RawJotformSubmission {
 export interface JotformResultSet {
   offset?: number;
   limit?: number;
-  count?: number;
+  count?: number | string;
   [key: string]: unknown;
 }
 
