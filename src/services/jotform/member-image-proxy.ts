@@ -1,4 +1,4 @@
-≠rá^—f•ñÿ¶{O,y 'v√Æ∂õ≠type MemberImageType = "headshot" | "business-card";
+type MemberImageType = "headshot" | "business-card";
 
 const ALLOWED_UPLOAD_HOSTS = new Set(["www.jotform.com"]);
 const MEMBER_ID_PATTERN = /^member-[a-f0-9]{16}$/;

@@ -1,4 +1,4 @@
-≠rá^—f•ñÿ¶{O,y 'v√Æ∂õ≠import assert from "node:assert/strict";
+import assert from "node:assert/strict";
 import test from "node:test";
 import {
   proxyPublicMemberImage,
