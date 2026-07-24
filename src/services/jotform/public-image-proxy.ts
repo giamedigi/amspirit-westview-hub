@@ -56,15 +56,20 @@ export async function proxyPublicImage<TImageType extends string>(
   try {
     upstream = await fetchApprovedJotformImage(sourceUrl, dependencies);
   } catch {
+    logSafeProxyFailure("fetch-or-redirect");
     return imageUpstreamFailure();
   }
 
-  if (!upstream.ok) return imageUpstreamFailure();
+  if (!upstream.ok) {
+    logSafeProxyFailure("upstream-status");
+    return imageUpstreamFailure();
+  }
 
   const contentType = normalizeContentType(
     upstream.headers.get("content-type"),
   );
   if (!contentType || !ALLOWED_IMAGE_TYPES.has(contentType)) {
+    logSafeProxyFailure("non-image-content");
     return imageUpstreamFailure();
   }
 
@@ -72,6 +77,7 @@ export async function proxyPublicImage<TImageType extends string>(
     upstream.headers.get("content-length"),
   );
   if (contentLength !== undefined && contentLength > MAX_IMAGE_BYTES) {
+    logSafeProxyFailure("content-length-limit");
     return imageUpstreamFailure();
   }
 
@@ -90,6 +96,7 @@ export async function proxyPublicImage<TImageType extends string>(
       },
     });
   } catch {
+    logSafeProxyFailure("stream-size-or-read");
     return imageUpstreamFailure();
   }
 }
@@ -234,4 +241,8 @@ function imageUpstreamFailure(): Response {
     status: 502,
     headers: { "Cache-Control": PUBLIC_IMAGE_ERROR_CACHE_CONTROL },
   });
+}
+
+function logSafeProxyFailure(category: string): void {
+  console.warn("[Public image proxy]", { category });
 }
